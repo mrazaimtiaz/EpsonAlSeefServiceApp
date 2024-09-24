@@ -35,6 +35,10 @@ interface PdaAPI {
 
     @GET("api/GetWorkingHoursBranches")
     suspend fun isBranchOpen(@Query("branchID") branchID: Int,): Response<List<IsBranchOpen>>
+
+
+    @GET("api/isPrintServiceAvailable")
+    suspend fun isPrintServiceAvailable(@Query("branchID") branchID: Int,): Response<List<IsPrintService>>
     
 /*    @GET("api/GetServices")
     suspend fun getServices(@Query("branchID") branchID: Int): Response<List<Services>>*/

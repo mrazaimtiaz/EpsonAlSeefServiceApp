@@ -21,6 +21,7 @@ class QViewModel(
 
     val branches: MutableLiveData<Resource<List<Branches>>> = MutableLiveData()
     val isBranchOpen: MutableLiveData<Resource<List<IsBranchOpen>>> = MutableLiveData()
+    val isPrintService: MutableLiveData<Resource<List<IsPrintService>>> = MutableLiveData()
     val getServices: MutableLiveData<Resource<List<Services>>> = MutableLiveData()
     val getBookTicket: MutableLiveData<Resource<List<BookTicket>>> = MutableLiveData()
     val getTicket: MutableLiveData<Resource<List<GetTicket>>> = MutableLiveData()
@@ -35,6 +36,7 @@ class QViewModel(
 
     private var branchesResponse: List<Branches>? = null
     private var isBranchOpenResponse: List<IsBranchOpen>? = null
+    private var isPrintServiceResponse: List<IsPrintService>? = null
     private var getServicesResponse: List<Services>? = null
     private var getBookTicketResponse: List<BookTicket>? = null
     private var getTicketResponse: List<GetTicket>? = null
@@ -62,6 +64,12 @@ class QViewModel(
     fun isBranchOpen(branchID: Int) = viewModelScope.launch {
      //   safeGetIsBranchOpen(branchID)
     }
+    fun isPrintService(branchID: Int) = viewModelScope.launch {
+          safeGetIsPrintService(branchID)
+    }
+
+
+
 
     /*suspend fun isBranchOpenForErrorActivity(branchID: Int) {
         safeGetIsBranchOpen(branchID)
@@ -143,6 +151,63 @@ class QViewModel(
                   else -> branches.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
               }
           }*/
+    }
+
+    private suspend fun safeGetIsPrintService(branchID: Int) {
+        isPrintService.postValue(Resource.Loading())
+        //   try {
+        if (getServerPreference()) {
+            try {
+                Log.d("TAG", "safeGetIsBranchOpen: called except 6")
+                val response = qRepository.isPrintServiceLocal(branchID)
+                isPrintService.postValue(handleIsPrintServiceResponse(response))
+                Log.d("TAG", "safeGetIsBranchOpen: called except 7")
+            } catch (t: Throwable) {
+                when (t) {
+                    is Exception -> {
+                        Log.d("TAG", "safeGetIsBranchOpen: called except 3")
+                        isPrintService.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+                    }
+                    else -> {
+                        Log.d("TAG", "safeGetIsBranchOpen: called except 4")
+                        isPrintService.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+                    }
+                }
+            }
+
+        } else {
+            if (hasInternetConnection()) {
+                try {
+                    val response = qRepository.isPrintService(branchID)
+                    isPrintService.postValue(handleIsPrintServiceResponse(response))
+                } catch (t: Throwable) {
+                    when (t) {
+                        is Exception -> {
+                            Log.d("TAG", "safeGetIsBranchOpen: called except 1")
+                            isPrintService.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+                        }
+                        else -> {
+                            Log.d("TAG", "safeGetIsBranchOpen: called except 2")
+                            isPrintService.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+                        }
+                    }
+                }
+            } else {
+                isPrintService.postValue(Resource.Error(mContext.getString(R.string.internet_error_admin)))
+            }
+        }
+        /* //   if (hasInternetConnection()) {
+                val response = qRepository.isBranchOpen(branchID)
+                isBranchOpen.postValue(handleIsBranchOpenResponse(response))
+             *//*   } else {
+                    isBranchOpen.postValue(Resource.Error(mContext.getString(R.string.internet_error_admin)))
+                }*/
+        /* } catch (t: Throwable) {
+             when (t) {
+                 is Exception -> isBranchOpen.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+                 else -> isBranchOpen.postValue(Resource.Error(mContext.getString(R.string.server_error_admin)))
+             }
+         }*/
     }
 
     private suspend fun safeGetIsBranchOpen(branchID: Int) {
@@ -457,6 +522,21 @@ class QViewModel(
         }
         return Resource.Error(response.message())
     }
+
+    private fun handleIsPrintServiceResponse(response: Response<List<IsPrintService>>): Resource<List<IsPrintService>> {
+        if (response.isSuccessful) {
+            response.body()?.let { resultResponse ->
+                isPrintServiceResponse = if (isPrintServiceResponse == null) {
+                    resultResponse
+                } else {
+                    resultResponse
+                }
+                return Resource.Success(isPrintServiceResponse ?: resultResponse)
+            }
+        }
+        return Resource.Error(response.message())
+    }
+
 
 
     private fun handleIsBranchOpenResponse(response: Response<List<IsBranchOpen>>): Resource<List<IsBranchOpen>> {

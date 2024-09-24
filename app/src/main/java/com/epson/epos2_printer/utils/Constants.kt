@@ -9,6 +9,10 @@ object Constants {
     const val DISPLAY_LNG_ENGLISH = "English"
     const val DISPLAY_LNG_ARABIC = "العربية"
 
+    const val PHARMACY = "PHARMACY";
+    const val MULTIPLE_SERVICES = "MULTIPLE_SERVICES";
+    const val CURRENT_DEPARTMENT = MULTIPLE_SERVICES
+
     const val INPUT_NUMBER_LENGTH = 8
 
     const val ALLOW_NUMBER_5 = 5
@@ -41,6 +45,7 @@ object Constants {
 
     const val BRANCH_DEFAULT_VALUE = -999
     const val DELAY_CHECK_BRANCH = 10000L
+    const val DELAY_IS_SERVICE = 5000L
 
     const val DELAY_SCREENSAVER = 180000L
   //const val DELAY_SCREENSAVER = 10000L

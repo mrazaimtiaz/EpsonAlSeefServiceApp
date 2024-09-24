@@ -30,6 +30,11 @@ class QRepository {
     suspend fun isBranchOpen(branchID: Int) =
             RetrofitInstance.api.isBranchOpen(branchID)
 
+
+    suspend fun isPrintService(branchID: Int) =
+        RetrofitInstance.api.isPrintServiceAvailable(branchID)
+
+
     suspend fun getServices(branchID: Int) =
 
 
@@ -77,6 +82,10 @@ class QRepository {
 
     suspend fun isBranchOpenLocal(branchID: Int) =
             RetrofitInstanceLocal.api.isBranchOpen(branchID)
+
+
+    suspend fun isPrintServiceLocal(branchID: Int) =
+        RetrofitInstanceLocal.api.isPrintServiceAvailable(branchID)
 
     suspend fun getServicesLocal(branchID: Int) =
             RetrofitInstanceLocal.api.getServices(branchID,"2")

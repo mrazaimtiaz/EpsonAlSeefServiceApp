@@ -47,6 +47,7 @@ import com.epson.epos2_printer.utils.Constants.BLUETOOTH_NAME
 import com.epson.epos2_printer.utils.Constants.BRANCH_DEFAULT_VALUE
 import com.epson.epos2_printer.utils.Constants.DELAY_BRANCH_SERVICES
 import com.epson.epos2_printer.utils.Constants.DELAY_CHECK_BRANCH
+import com.epson.epos2_printer.utils.Constants.DELAY_IS_SERVICE
 import com.epson.epos2_printer.utils.Constants.DISPLAY_LNG_ARABIC
 import com.epson.epos2_printer.utils.Constants.EXTRA_BRANCH_ID
 import com.epson.epos2_printer.utils.Constants.EXTRA_CHECKED_NUMBER
@@ -216,6 +217,9 @@ class ServiceActivity : AppCompatActivity(), ReceiveListener,StatusChangeListene
 
         if (branchId != BRANCH_DEFAULT_VALUE)
             viewModel.isBranchOpen(branchID = branchId)
+
+        if(Constants.CURRENT_DEPARTMENT == Constants.MULTIPLE_SERVICES)
+            viewModel.isPrintService(branchID = branchId)
 
        mFilterOption = FilterOption()
        mFilterOption?.setDeviceType(Discovery.TYPE_PRINTER)
@@ -770,7 +774,74 @@ class ServiceActivity : AppCompatActivity(), ReceiveListener,StatusChangeListene
                 }
             }
         })
+        viewModel.isPrintService.observe(this, Observer { response ->
+            when (response) {
+                is Resource.Success -> {
+                    try {
+                        if (response.data != null && response.data.isNotEmpty()) {
+                            for (list in response.data) {
 
+                            }
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    delay(DELAY_IS_SERVICE)
+                                    if (branchId != BRANCH_DEFAULT_VALUE)
+                                        viewModel.isPrintService(branchId)
+
+                                    for( item in response.data){
+                                        item.Services_PK_ID?.let {
+
+                                            viewModel.getBookTicket("", it, false, false, INT_ENGLISH, -1, branchId, branchId)
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+                                    Log.d("TAG", "onResume: Exception 45 ")
+                                    e.printStackTrace()
+                                }
+                            }
+                        } else {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    delay(DELAY_IS_SERVICE)
+                                    if (branchId != BRANCH_DEFAULT_VALUE)
+                                        viewModel.isPrintService(branchId)
+                                } catch (e: Exception) {
+                                    Log.d("TAG", "onResume: Exception 478 ")
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.d("TAG", "onResume: Exception 13 ")
+
+                        e.printStackTrace()
+                    }
+                }
+
+                is Resource.Error -> {
+                    try {
+                        viewModel.sendLog(branchId,response.message.toString() + "(isPrintService)")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            try {
+                                showToastInfo(response.message.toString())
+                                delay(DELAY_IS_SERVICE)
+                                if (branchId != BRANCH_DEFAULT_VALUE)
+                                    viewModel.isPrintService(branchId)
+                            } catch (e: Exception) {
+                                Log.d("TAG", "onResume: Exception 40 ")
+                                e.printStackTrace()
+                            }
+                        }
+                    } catch (e: java.lang.Exception) {
+                        Log.d("TAG", "onResume: Exception 14 ")
+
+                        e.printStackTrace()
+                    }
+
+                }
+            }
+        })
         viewModel.isBranchOpen.observe(this, Observer { response ->
             when (response) {
                 is Resource.Success -> {
@@ -1151,7 +1222,11 @@ class ServiceActivity : AppCompatActivity(), ReceiveListener,StatusChangeListene
                 val image = convertBase64ToBitmap(text)
 
                 if (image != null) {
-                    mPrinter?.addImage(image, 0, 0,
+
+
+                    if(Constants.CURRENT_DEPARTMENT == Constants.MULTIPLE_SERVICES){
+
+                        mPrinter?.addImage(image, 0, 0,
                             image.width,
                             image.height,
                             Printer.COLOR_1,
@@ -1160,10 +1235,12 @@ class ServiceActivity : AppCompatActivity(), ReceiveListener,StatusChangeListene
                             Printer.PARAM_DEFAULT.toDouble(),
                             Printer.COMPRESS_AUTO)
 
-                    mPrinter?.addCut(Printer.CUT_FEED)
+                        mPrinter?.addCut(Printer.CUT_FEED)
+                    }
 
                     printData()
                 }
+
 
             } catch (e: java.lang.Exception) {
                 withContext(Dispatchers.Main){
